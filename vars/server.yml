@@ -1,0 +1,4 @@
+docker_users:
+  - gabriel
+
+compose_url: 'https://github.com/docker/compose/releases/download/1.27.4/docker-compose-Linux-x86_64'

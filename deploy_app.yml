@@ -1,0 +1,51 @@
+---
+  # ansible-playbook \
+  # -e 'git_url=... project_name=...' \
+  # deploy_app.yml
+  
+- name: Deploy app from git
+  hosts: all
+  gather_facts: false
+  
+  tasks:
+
+    - name: 'Removing stack {{project_name}}'
+      community.general.docker_stack:
+        name: '{{project_name}}'
+        state: absent
+
+    - name: 'Removing image {{project_name}}'
+      community.general.docker_image:
+        name: '{{project_name}}'
+        state: absent
+      register: task_result
+      until: task_result is not failed
+      retries: 3
+      delay: 5
+
+    - name: 'Cloning {{git_url}}'
+      ansible.builtin.git:
+        repo: '{{git_url}}'
+        dest: '/tmp/{{project_name}}'
+
+    - name: 'Building {{project_name}} from Dockerfile'
+      community.general.docker_image:
+        build:
+          path: '/tmp/{{project_name}}'
+          pull: true
+        name: '{{project_name}}'
+        force_source: true
+        source: build
+        state: present
+    
+    - name: 'Deploying {{project_name}} from docker-compose.yml'
+      community.general.docker_stack:
+        name: '{{project_name}}'
+        compose: '/tmp/{{project_name}}/docker-compose.yml'
+        state: present
+    
+    - name: Removing git repository
+      ansible.builtin.file:
+        path: '/tmp/{{project_name}}'
+        state: absent
+    
