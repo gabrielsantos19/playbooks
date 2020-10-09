@@ -10,7 +10,7 @@
     - name: Including vars from server.yml
       # ansible.builtin.include_vars doesn't work
       include_vars:
-        file: servidor.yml
+        file: server.yml
 
     - name: Installing docker
       # ansible.builtin.import_role doesn't work
