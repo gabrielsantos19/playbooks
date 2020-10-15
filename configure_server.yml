@@ -1,71 +1,78 @@
 ---
-- name: Configure server
-  hosts: all
-  gather_facts: true
-  #collections:
-  #  - ericsysmin.docker
-
-  tasks:
-
-    - name: Including vars from server.yml
-      # ansible.builtin.include_vars doesn't work
-      include_vars:
-        file: server.yml
-
-    - name: Updating apt cache
-      ansible.builtin.apt:
-        update_cache: true
-      become: true
+  - name: Configure server
+    hosts: all
+    gather_facts: true
+    #collections:
+    #  - ericsysmin.docker
+  
+    tasks:
+  
+      - name: Including vars from server.yml
+        # ansible.builtin.include_vars doesn't work
+        include_vars:
+          file: server.yml
+  
+      - name: Updating apt cache
+        ansible.builtin.apt:
+          update_cache: true
+        become: true
+        
+      - name: Installing/Updating python3
+        ansible.builtin.apt:
+          name: python3
+          state: latest
+        become: true
+  
+      - name: Installing/Updating python3-pip
+        ansible.builtin.apt:
+          name: python3-pip
+          state: latest
+        become: true
+  
+      - name: Installing docker python3 module
+        ansible.builtin.pip:
+          name: docker
+        # Since "Initing docker swarm" will run with
+        # become, the module needs to be avalible to root
+        become: true
+        
+      - name: Installing docker-compose python3 module
+        ansible.builtin.pip:
+          name: docker-compose
+        # Since "Initing docker swarm" will run with
+        # become, the module needs to be avalible to root
+        become: true
+  
+      - name: Installing docker
+        # ansible.builtin.import_role doesn't work
+        import_role:
+          name: ericsysmin.docker.docker
+        vars:
+          docker_storage_driver: aufs
+          # Users to docker group
+          docker_users: '{{docker_users}}'
+        become: true
+  
+      - name: Initing docker swarm
+        community.general.docker_swarm:
+          state: present
+        # Although the users are in the docker group now,
+        # they were probably added by this play
+        become: true
+  
+      - name: Installing docker-compose
+        get_url:
+          url: '{{compose_url}}'
+          # $(uname -s) = {{ ansible_facts['system'] }}
+          # $(uname -m) = {{ ansible_facts['machine'] }}
+          dest: '/usr/local/bin/docker-compose'
+          mode: 'o+x'
+        become: true
+  
+      # ...
+      # - name: Container Jenkins implantado
+      #   ansible.builtin.command:
+      #     argv:
+      #       - docker
+      #       - ps
       
-    - name: Installing/Updating python3
-      ansible.builtin.apt:
-        name: python3
-        state: latest
-      become: true
-
-    - name: Installing/Updating python3-pip
-      ansible.builtin.apt:
-        name: python3-pip
-        state: latest
-      become: true
-
-    - name: Installing docker python3 module
-      ansible.builtin.pip:
-        name: docker
-      # Since "Initing docker swarm" will run with
-      # become, the module needs to be avalible to root
-      become: true
-      
-    - name: Installing docker
-      # ansible.builtin.import_role doesn't work
-      import_role:
-        name: ericsysmin.docker.docker
-      vars:
-        docker_storage_driver: aufs
-        # Users to docker group
-        docker_users: '{{docker_users}}'
-      become: true
-
-    - name: Initing docker swarm
-      community.general.docker_swarm:
-        state: present
-      # Although the users are in the docker group now,
-      # they were probably added by this play
-      become: true
-
-    - name: Installing docker-compose
-      get_url:
-        url: '{{compose_url}}'
-        # $(uname -s) = {{ ansible_facts['system'] }}
-        # $(uname -m) = {{ ansible_facts['machine'] }}
-        dest: '/usr/local/bin/docker-compose'
-        mode: 'o+x'
-      become: true
-
-    # ...
-    # - name: Container Jenkins implantado
-    #   ansible.builtin.command:
-    #     argv:
-    #       - docker
-    #       - ps
-    
