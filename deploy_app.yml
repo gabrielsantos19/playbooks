@@ -1,51 +1,47 @@
 ---
-  # ansible-playbook \
-  # -e 'git_url=... project_name=...' \
-  # deploy_app.yml
+# ansible-playbook -e '
+# git_url=...
+# repo_version=...
+# repo_key=...
+# ' deploy_app.yml
   
 - name: Deploy app from git
   hosts: all
   gather_facts: false
+  vars:
+    - local_name: ci_cd_repo
+    - git_url: false
+    - repo_version: HEAD
+    - repo_key: false
   
   tasks:
-
-    - name: 'Removing stack {{project_name}}'
-      community.general.docker_stack:
-        name: '{{project_name}}'
-        state: absent
-
-    - name: 'Removing image {{project_name}}'
-      community.general.docker_image:
-        name: '{{project_name}}'
-        state: absent
-      register: task_result
-      until: task_result is not failed
-      retries: 3
-      delay: 5
 
     - name: 'Cloning {{git_url}}'
       ansible.builtin.git:
         repo: '{{git_url}}'
-        dest: '/tmp/{{project_name}}'
+        version: '{{repo_version}}'
+        key_file: '{{repo_key}}'
+        accept_hostkey: true
+        dest: '/tmp/{{local_name}}'
+        force: true
+      register: clone_result
+      until: clone_result is not failed
+      retries: 3
+      delay: 3
 
-    - name: 'Building {{project_name}} from Dockerfile'
-      community.general.docker_image:
-        build:
-          path: '/tmp/{{project_name}}'
-          pull: true
-        name: '{{project_name}}'
-        force_source: true
-        source: build
+    - name: 'Building from docker-compose.yml'
+      community.general.docker_compose:
+        project_src: /tmp/{{local_name}}
+        build: true
+
+    - name: 'Deploying from docker-compose.yml'
+      community.general.docker_compose:
+        project_src: /tmp/{{local_name}}
+        build: false
         state: present
     
-    - name: 'Deploying {{project_name}} from docker-compose.yml'
-      community.general.docker_stack:
-        name: '{{project_name}}'
-        compose: '/tmp/{{project_name}}/docker-compose.yml'
-        state: present
-    
-    - name: Removing git repository
+    - name: 'Removing git repository'
       ansible.builtin.file:
-        path: '/tmp/{{project_name}}'
+        path: '/tmp/{{local_name}}'
         state: absent
     
