@@ -32,15 +32,13 @@
       - name: Installing docker python3 module
         ansible.builtin.pip:
           name: docker
-        # Since "Initing docker swarm" will run with
-        # become, the module needs to be avalible to root
+        # To be avalible at root level
         become: true
         
       - name: Installing docker-compose python3 module
         ansible.builtin.pip:
           name: docker-compose
-        # Since "Initing docker swarm" will run with
-        # become, the module needs to be avalible to root
+        # To be avalible at root level
         become: true
   
       - name: Installing docker
@@ -68,11 +66,4 @@
           dest: '/usr/local/bin/docker-compose'
           mode: 'o+x'
         become: true
-  
-      # ...
-      # - name: Container Jenkins implantado
-      #   ansible.builtin.command:
-      #     argv:
-      #       - docker
-      #       - ps
       
