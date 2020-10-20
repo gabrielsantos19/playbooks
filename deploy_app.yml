@@ -10,14 +10,14 @@
   hosts: all
   gather_facts: false
   vars:
-    - git_url: false
-    #- project_name: false
-    - repo_version: HEAD
-    - repo_key: false
+    # git_url
+    - project_name: "{{ git_url | urlsplit('path') | basename | splitext | first }}"
+    - repo_version: 'HEAD'
+    - repo_key: ''
   
   tasks:
 
-    - name: 'Cloning {{git_url}}'
+    - name: 'Cloning {{git_url}} into /tmp/{{ project_name }}'
       ansible.builtin.git:
         repo: '{{git_url}}'
         version: '{{repo_version}}'
