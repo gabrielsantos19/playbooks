@@ -29,15 +29,10 @@
       retries: 3
       delay: 3
 
-    - name: 'Building from docker-compose.yml'
-      community.general.docker_compose:
-        project_src: /tmp/{{local_name}}
-        build: true
-
     - name: 'Deploying from docker-compose.yml'
       community.general.docker_compose:
         project_src: /tmp/{{local_name}}
-        build: false
+        build: true
         state: present
     
     - name: 'Removing git repository'
