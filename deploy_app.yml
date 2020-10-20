@@ -17,13 +17,13 @@
   
   tasks:
 
-    - name: 'Cloning {{git_url}} into /tmp/{{ project_name }}'
+    - name: 'Cloning {{ git_url }} into /tmp/{{ project_name }}'
       ansible.builtin.git:
-        repo: '{{git_url}}'
-        version: '{{repo_version}}'
-        key_file: '{{repo_key}}'
+        repo: '{{ git_url }}'
+        version: '{{ repo_version }}'
+        key_file: '{{ repo_key }}'
         accept_hostkey: true
-        dest: '/tmp/{{project_name}}'
+        dest: '/tmp/{{ project_name }}'
         umask: '0077'
         force: true
       register: clone_result
@@ -33,12 +33,12 @@
 
     - name: 'Deploying from docker-compose.yml'
       community.general.docker_compose:
-        project_src: /tmp/{{project_name}}
+        project_src: /tmp/{{ project_name }}
         build: true
         state: present
     
     - name: 'Removing git repository'
       ansible.builtin.file:
-        path: '/tmp/{{project_name}}'
+        path: '/tmp/{{ project_name }}'
         state: absent
     
