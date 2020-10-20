@@ -1,6 +1,7 @@
 ---
 # ansible-playbook -e '
 # git_url=...
+# project_name=...
 # repo_version=...
 # repo_key=...
 # ' deploy_app.yml
@@ -9,8 +10,8 @@
   hosts: all
   gather_facts: false
   vars:
-    - local_name: ci_cd_repo
     - git_url: false
+    #- project_name: false
     - repo_version: HEAD
     - repo_key: false
   
@@ -22,7 +23,7 @@
         version: '{{repo_version}}'
         key_file: '{{repo_key}}'
         accept_hostkey: true
-        dest: '/tmp/{{local_name}}'
+        dest: '/tmp/{{project_name}}'
         force: true
       register: clone_result
       until: clone_result is not failed
@@ -31,12 +32,12 @@
 
     - name: 'Deploying from docker-compose.yml'
       community.general.docker_compose:
-        project_src: /tmp/{{local_name}}
+        project_src: /tmp/{{project_name}}
         build: true
         state: present
     
     - name: 'Removing git repository'
       ansible.builtin.file:
-        path: '/tmp/{{local_name}}'
+        path: '/tmp/{{project_name}}'
         state: absent
     
