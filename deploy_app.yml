@@ -24,6 +24,7 @@
         key_file: '{{repo_key}}'
         accept_hostkey: true
         dest: '/tmp/{{project_name}}'
+        umask: '0077'
         force: true
       register: clone_result
       until: clone_result is not failed
