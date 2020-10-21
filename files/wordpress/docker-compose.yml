@@ -1,0 +1,56 @@
+version: '3.8'
+services:
+
+  wordpress:
+    image: wordpress
+    ports:
+      - 7017:80
+    environment:
+      LANGUAGE: 'pt_BR'
+      TITLE: ''
+      USER_NAME: ''
+      ADMIN_PASSWORD: ''
+      ADMIN_EMAIL: ''
+      BLOG_PUBLIC: '0'
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_USER: user_wp
+      WORDPRESS_DB_PASSWORD: wi3nie6CieX0OhquaevaGh9Ooy
+      WORDPRESS_DB_NAME: data_wp
+    volumes:
+      - wordpress:/var/www/html
+      - ./install.php:/usr/src/wordpress/wp-admin/install.php
+      - ./custom.ini:/usr/local/etc/php/conf.d/custom.ini
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 200M
+        reservations:
+          cpus: '0.25'
+          memory: 100M
+
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_DATABASE: data_wp
+      MYSQL_USER: user_wp
+      MYSQL_PASSWORD: wi3nie6CieX0OhquaevaGh9Ooy
+      MYSQL_RANDOM_ROOT_PASSWORD: '1'
+    volumes:
+      - db:/var/lib/mysql
+    deploy:
+      mode: replicated
+      replicas: 1
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 500M
+        reservations:
+          cpus: '0.25'
+          memory: 300M
+
+volumes:
+  wordpress:
+  db:

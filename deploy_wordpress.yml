@@ -1,0 +1,25 @@
+---
+- name: Deploy generic wordpress
+  hosts: all
+  gather_facts: false
+  vars:
+  # project_name
+  - repo_version: 'HEAD'
+  - repo_key: ''
+  - base_dir: '/tmp/'
+  - dest_folder: '{{ base_dir }}{{ project_name }}'
+  #/var/www/html/wp-admin# php -r 'include "upgrexitade.php"; wp_install();'
+  tasks:
+
+  - name: 'Copying files'
+    ansible.builtin.copy:
+      src: 'files/wordpress/'
+      dest: '{{ dest_folder }}'
+      mode: '0777'
+      force: false
+
+  - name: 'Deploying from docker-compose.yml'
+    community.general.docker_compose:
+      project_src: '{{ dest_folder }}'
+      build: true
+      state: present
