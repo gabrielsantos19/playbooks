@@ -8,7 +8,6 @@
   - repo_key: ''
   - base_dir: '/tmp/'
   - dest_folder: '{{ base_dir }}{{ project_name }}'
-  #/var/www/html/wp-admin# php -r 'include "upgrexitade.php"; wp_install();'
   tasks:
 
   - name: 'Copying files'
