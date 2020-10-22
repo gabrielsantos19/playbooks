@@ -1,0 +1,3 @@
+[submodule "files/wp-template"]
+	path = files/wp-template
+	url = https://github.com/gabrielsantos19/wp-template.git
