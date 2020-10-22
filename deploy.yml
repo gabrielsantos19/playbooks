@@ -1,0 +1,85 @@
+---
+- name: Deploy wordpress from wp-template
+  hosts: all
+  gather_facts: false
+  vars:
+    # git_url
+    # path
+    # project_name
+    # project_folder
+    - repo_version: 'HEAD'
+    - repo_key: ''
+    - dest_folder: /tmp/
+    
+  tasks:
+
+    - name: 'Setting project_name from gir_url'
+      ansible.builtin.set_fact:
+        project_name: "{{ git_url | urlsplit('path') | basename | splitext | first }}"
+      when: git_url is defined and project_name is not defined
+
+    - name: 'Setting project_name from path'
+      ansible.builtin.set_fact:
+        project_name: "{{ path | urlsplit('path') | basename | splitext | first }}"
+      when: git_url is not defined and project_name is not defined
+
+    - name: 'Setting project_folder'
+      ansible.builtin.set_fact:
+        project_folder: '{{ dest_folder }}{{ project_name }}/'
+
+    - name: 'Cloning {{ git_url }} into {{ project_folder }}'
+      ansible.builtin.git:
+        repo: '{{ git_url }}'
+        version: '{{ repo_version }}'
+        key_file: '{{ repo_key }}'
+        accept_hostkey: true
+        dest: '{{ project_folder }}'
+        umask: '0077'
+        force: true
+      register: clone_result
+      until: clone_result is not failed
+      retries: 3
+      delay: 3
+      when: git_url is defined
+
+    - name: 'Copying files'
+      ansible.builtin.copy:
+        src: '{{ path }}/'
+        dest: '{{ project_folder }}'
+        mode: '0700'
+        force: false
+      when: git_url is not defined
+
+    - name: 'Registering .env variables'
+      ansible.builtin.command:
+        chdir: '{{ project_folder }}'
+        argv:
+        - python3
+        - -c
+        - import dotenv; print(dotenv.dotenv_values())
+      register: dotenv
+
+    - name: 'Building image from Dockerfile'
+      community.general.docker_image:
+        name: '{{ (dotenv.stdout | from_yaml).NAME }}'
+        tag: '{{ (dotenv.stdout | from_yaml).VERSION }}'
+        source: build
+        force_source: true
+        build:
+          path: '{{ project_folder }}'
+          pull: true
+        state: present
+
+    - name: 'Deploying stack from docker-compose.yml'
+      community.general.docker_stack:
+        name: '{{ project_name }}'
+        compose: '{{ project_folder }}docker-compose.yml'
+        state: present
+      environment: '{{ dotenv.stdout }}'
+
+    - name: 'Removing git repository'
+      ansible.builtin.file:
+        path: '{{ project_folder }}'
+        state: absent
+      when: git_url is defined
+    
