@@ -1,5 +1,5 @@
 ---
-- name: Deploy generic wordpress
+- name: Deploy wordpress from wp-template
   hosts: all
   gather_facts: false
   vars:
@@ -7,18 +7,28 @@
   - repo_version: 'HEAD'
   - repo_key: ''
   - base_dir: '/tmp/'
-  - dest_folder: '{{ base_dir }}{{ project_name }}'
+  - dest_folder: '{{ base_dir }}{{ project_name }}/'
   tasks:
 
   - name: 'Copying files'
     ansible.builtin.copy:
-      src: 'files/wordpress/'
+      src: 'files/wp-template/'
       dest: '{{ dest_folder }}'
-      mode: '0777'
+      mode: '0700'
       force: false
 
-  - name: 'Deploying from docker-compose.yml'
-    community.general.docker_compose:
-      project_src: '{{ dest_folder }}'
-      build: true
+  - name: 'Registering .env variables'
+    ansible.builtin.command:
+      chdir: '{{ dest_folder }}'
+      argv:
+        - python3
+        - -c
+        - import dotenv; print(dotenv.dotenv_values())
+    register: dotenv
+
+  - name: 'Deploying stack from docker-compose.yml'
+    community.general.docker_stack:
+      name: '{{ project_name }}'
+      compose: '{{ dest_folder }}docker-compose.yml'
       state: present
+    environment: "{{ dotenv['stdout'] }}"
