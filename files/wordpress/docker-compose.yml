@@ -4,17 +4,13 @@ services:
   wordpress:
     image: wordpress
     ports:
-      - 7017:80
+      - '${PUB_PORT}:80'
+    env_file: 
+      - .env
     environment:
-      LANGUAGE: 'pt_BR'
-      TITLE: ''
-      USER_NAME: ''
-      ADMIN_PASSWORD: ''
-      ADMIN_EMAIL: ''
-      BLOG_PUBLIC: '0'
       WORDPRESS_DB_HOST: db
       WORDPRESS_DB_USER: user_wp
-      WORDPRESS_DB_PASSWORD: wi3nie6CieX0OhquaevaGh9Ooy
+      WORDPRESS_DB_PASSWORD: '${MYSQL_PASSWORD}'
       WORDPRESS_DB_NAME: data_wp
     volumes:
       - wordpress:/var/www/html
@@ -36,7 +32,7 @@ services:
     environment:
       MYSQL_DATABASE: data_wp
       MYSQL_USER: user_wp
-      MYSQL_PASSWORD: wi3nie6CieX0OhquaevaGh9Ooy
+      MYSQL_PASSWORD: '${MYSQL_PASSWORD}'
       MYSQL_RANDOM_ROOT_PASSWORD: '1'
     volumes:
       - db:/var/lib/mysql
