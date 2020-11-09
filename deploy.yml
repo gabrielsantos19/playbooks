@@ -1,5 +1,5 @@
 ---
-- name: Deploy wordpress from wp-template
+- name: Build and deploy app stack
   hosts: all
   gather_facts: false
   vars:
