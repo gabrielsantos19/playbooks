@@ -64,6 +64,7 @@
           path: '{{ project_folder }}'
           pull: true
         state: present
+      ignore_errors: true
 
     - name: 'Deploying stack from docker-compose.yml'
       community.general.docker_stack:
