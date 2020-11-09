@@ -40,6 +40,12 @@
           name: docker-compose
         # To be avalible at root level
         become: true
+
+      - name: Installing jsondiff python3 module
+        ansible.builtin.pip:
+          name: jsondiff
+        # To be avalible at root level
+        become: true
   
       - name: Installing docker
         # ansible.builtin.import_role doesn't work
