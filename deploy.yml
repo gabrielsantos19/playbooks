@@ -3,33 +3,28 @@
   hosts: all
   gather_facts: false
   vars:
-    # git_url
-    # path
+    # app
     # project_name
     # project_folder
+    - app_split: '{{ app | urlsplit }}'
     - repo_version: 'HEAD'
     - repo_key: ''
     - dest_folder: /tmp/
     
   tasks:
 
-    - name: 'Setting project_name from gir_url'
+    - name: 'Setting project_name '
       ansible.builtin.set_fact:
-        project_name: "{{ git_url | urlsplit('path') | basename | splitext | first }}"
-      when: git_url is defined and project_name is not defined
-
-    - name: 'Setting project_name from path'
-      ansible.builtin.set_fact:
-        project_name: "{{ path | urlsplit('path') | basename | splitext | first }}"
-      when: git_url is not defined and project_name is not defined
+        project_name: "{{ app_split.path | basename | splitext | first }}"
+      when: project_name is not defined
 
     - name: 'Setting project_folder'
       ansible.builtin.set_fact:
         project_folder: '{{ dest_folder }}{{ project_name }}/'
 
-    - name: 'Cloning {{ git_url }} into {{ project_folder }}'
+    - name: 'Cloning {{ app }} into {{ project_folder }}'
       ansible.builtin.git:
-        repo: '{{ git_url }}'
+        repo: '{{ app }}'
         version: '{{ repo_version }}'
         key_file: '{{ repo_key }}'
         accept_hostkey: true
@@ -40,15 +35,15 @@
       until: clone_result is not failed
       retries: 3
       delay: 3
-      when: git_url is defined
+      when: app_split.scheme != ""
 
     - name: 'Copying files'
       ansible.builtin.copy:
-        src: '{{ path }}/'
+        src: '{{ app }}/'
         dest: '{{ project_folder }}'
         mode: '0700'
         force: false
-      when: git_url is not defined
+      when: clone_result is skipped
 
     - name: 'Registering .env variables'
       ansible.builtin.command:
@@ -81,5 +76,5 @@
       ansible.builtin.file:
         path: '{{ project_folder }}'
         state: absent
-      when: git_url is defined
+      when: clone_result is not skipped
     
