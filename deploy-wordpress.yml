@@ -1,0 +1,59 @@
+---
+- name: Deploy Wordpress from template
+  hosts: all
+  gather_facts: false
+  vars:
+    # app
+    # project_name
+    - app_split: '{{ app | urlsplit }}'
+    - dest_folder: '~/'
+
+  tasks:
+    - name: 'Setting project_name'
+      ansible.builtin.set_fact:
+        project_name: "{{ app_split.path | basename | splitext | first }}"
+      when: project_name is not defined
+
+    - name: 'Setting project_folder'
+      ansible.builtin.set_fact:
+        project_folder: '{{ dest_folder }}{{ project_name }}/'
+
+    - name: 'Copying {{ app }} into {{ project_folder }}'
+      ansible.builtin.copy:
+        src: '{{ app }}/'
+        dest: '{{ project_folder }}'
+        mode: '0700'
+        force: false
+
+    - name: 'Registering .env variables'
+      ansible.builtin.command:
+        chdir: '{{ project_folder }}'
+        argv:
+        - python3
+        - -c
+        - import dotenv; print(dotenv.dotenv_values())
+      register: dotenv_raw
+
+    - name: 'Setting dotenv fact'
+      ansible.builtin.set_fact:
+        dotenv: '{{ dotenv_raw.stdout | from_yaml }}'
+
+    - name: 'Deploying stack from docker-compose.yml'
+      community.general.docker_stack:
+        name: '{{ project_name }}'
+        compose: '{{ project_folder }}docker-compose.yml'
+        state: present
+      environment: '{{ dotenv }}'
+
+    - name: 'Creatting database'
+      community.mysql.mysql_db:
+        name: '{{ dotenv.DB_NAME }}'
+        state: present
+
+    - name: 'Creatting user'
+      community.mysql.mysql_user:
+        name: '{{ dotenv.DB_USER }}'
+        host: '%'
+        password: '{{ dotenv.DB_PASSWORD }}'
+        priv: '{{ dotenv.DB_NAME }}.*:ALL'
+        state: present
