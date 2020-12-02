@@ -37,10 +37,10 @@
       delay: 3
       when: app_split.scheme != ""
 
-    - name: 'Copying {{ app }} into {{ dest_folder }}'
+    - name: 'Copying {{ app }} into {{ project_folder }}'
       ansible.builtin.copy:
-        src: '{{ app }}'
-        dest: '{{ dest_folder }}'
+        src: '{{ app }}/'
+        dest: '{{ project_folder }}'
         mode: '0700'
         force: false
       when: clone_result is skipped
