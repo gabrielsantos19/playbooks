@@ -3,8 +3,8 @@
   hosts: all
   gather_facts: false
   vars:
-    # app
-    # project_name
+    - app: 'wp-db'
+    - project_name: 'wordpress-database'
     - app_split: '{{ app | urlsplit }}'
     - dest_folder: '~/'
 
