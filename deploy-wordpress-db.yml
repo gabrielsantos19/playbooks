@@ -41,7 +41,7 @@
     - name: 'Creatting network'
       community.general.docker_network:
         driver: overlay
-        name: wordpress
+        name: 'wordpress-database'
         scope: swarm
         state: present
 

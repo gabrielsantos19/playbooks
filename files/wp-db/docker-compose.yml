@@ -4,7 +4,7 @@ services:
   db:
     image: 'mysql:5.7'
     networks:
-      - wordpress
+      - 'wordpress-database'
     ports:
       - '3306:3306'
       #- '33060:33060'
@@ -26,5 +26,5 @@ volumes:
   db:
 
 networks:
-  wordpress:
+  wordpress-database:
     external: true

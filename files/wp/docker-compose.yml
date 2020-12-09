@@ -4,7 +4,7 @@ services:
   wordpress:
     image: wordpress
     networks: 
-      - wordpress
+      - 'wordpress-database'
     ports:
       - '${PUB_PORT}:80'
     env_file: 
@@ -33,5 +33,5 @@ volumes:
   wordpress:
 
 networks:
-  wordpress:
+  wordpress-database:
     external: true
