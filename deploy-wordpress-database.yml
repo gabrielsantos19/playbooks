@@ -4,7 +4,7 @@
   gather_facts: false
   vars:
     - app: 'wordpress-database'
-    - project_name: 'wordpress-database'
+    #- project_name: 
     - app_split: '{{ app | urlsplit }}'
     - dest_folder: '~/'
 
