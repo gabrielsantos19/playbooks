@@ -22,7 +22,7 @@
       ansible.builtin.copy:
         src: '{{ app }}/'
         dest: '{{ project_folder }}'
-        mode: '0700'
+        mode: '0600'
         force: false
 
     - name: 'Registering .env variables'
