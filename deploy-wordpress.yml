@@ -7,7 +7,6 @@
     # project_name
     - app_split: '{{ app | urlsplit }}'
     - dest_folder: '~/'
-    - configuration_file: '~/.wordpress-database.cnf'
 
   tasks:
     - name: 'Setting project_name'
@@ -45,18 +44,3 @@
         compose: '{{ project_folder }}docker-compose.yml'
         state: present
       environment: '{{ dotenv }}'
-
-    - name: 'Creatting mysql database'
-      community.mysql.mysql_db:
-        config_file: '{{ configuration_file }}'
-        name: '{{ dotenv.DB_NAME }}'
-        state: present
-
-    - name: 'Creatting mysql user'
-      community.mysql.mysql_user:
-        config_file: '{{ configuration_file }}'
-        name: '{{ dotenv.DB_USER }}'
-        host: '%'
-        password: '{{ dotenv.DB_PASSWORD }}'
-        priv: '{{ dotenv.DB_NAME }}.*:ALL'
-        state: present
