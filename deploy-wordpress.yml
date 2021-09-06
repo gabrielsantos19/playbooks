@@ -38,9 +38,9 @@
       ansible.builtin.set_fact:
         dotenv: '{{ dotenv_raw.stdout | from_yaml }}'
 
-    - name: 'Deploying stack from docker-compose.yml'
+    - name: 'Deploying stack from stack.yml'
       community.general.docker_stack:
         name: '{{ project_name }}'
-        compose: '{{ project_folder }}docker-compose.yml'
+        compose: '{{ project_folder }}stack.yml'
         state: present
       environment: '{{ dotenv }}'
