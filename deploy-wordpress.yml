@@ -3,7 +3,7 @@
   hosts: all
   gather_facts: false
   vars:
-    - app: wordpress
+    # app
     # project_name
     - app_split: '{{ app | urlsplit }}'
     - dest_folder: '~/'
