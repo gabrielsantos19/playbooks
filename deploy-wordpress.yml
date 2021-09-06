@@ -3,17 +3,21 @@
   hosts: all
   gather_facts: false
   vars:
-    # app
-    # project_name
+    # app -- git cloned wordpress folder
+    # project_name -- destine folder
     - app_split: '{{ app | urlsplit }}'
     - dest_folder: '~/'
 
   tasks:
+    # Destine folder name on server defaults to the source folder name
+    # Define project_name to set a different value
     - name: 'Setting project_name'
       ansible.builtin.set_fact:
         project_name: "{{ app_split.path | basename | splitext | first }}"
       when: project_name is not defined
 
+    # Destine folder location defaults to ~/
+    # Define project_folder to set a different value
     - name: 'Setting project_folder'
       ansible.builtin.set_fact:
         project_folder: '{{ dest_folder }}{{ project_name }}/'
